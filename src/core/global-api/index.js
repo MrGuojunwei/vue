@@ -17,17 +17,10 @@ import {
   defineReactive
 } from '../util/index'
 
-export function initGlobalAPI (Vue: GlobalAPI) {
+export function initGlobalAPI(Vue: GlobalAPI) {
   // config
   const configDef = {}
   configDef.get = () => config
-  if (process.env.NODE_ENV !== 'production') {
-    configDef.set = () => {
-      warn(
-        'Do not replace the Vue.config object, set individual fields instead.'
-      )
-    }
-  }
   Object.defineProperty(Vue, 'config', configDef)
 
   // exposed util methods.
@@ -44,16 +37,35 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   Vue.delete = del
   Vue.nextTick = nextTick
 
-  Vue.options = Object.create(null)
+  Vue.options = Object.create(null) // Vue.options = {};
+  // ASSET_TYPES = ['component', 'directive', 'filter'];
   ASSET_TYPES.forEach(type => {
     Vue.options[type + 's'] = Object.create(null)
   })
+  // 此时Vue.options
+  // Vue.options = {
+  //   components: {},
+  //   directives: {},
+  //   filters: {}
+  // }
 
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
+  // Vue.options._base指向Vue构造函数
   Vue.options._base = Vue
 
-  extend(Vue.options.components, builtInComponents)
+  extend(Vue.options.components, builtInComponents) // 向Vue.options.components中扩展内置组件 目前内置组件只有Keep-Alive
+
+  /**
+   * 到这一步，Vue.options = {
+   *  components: {
+   *   'keep-alive': KeepAlive 
+   *  },
+   *  directives: {},
+   *  filters: {},
+   *  _base: Vue
+   * }
+   */
 
   initUse(Vue)
   initMixin(Vue)
