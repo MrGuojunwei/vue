@@ -32,6 +32,8 @@ export function initMixin (Vue: Class<Component>) {
       initInternalComponent(vm, options)
     } else {
       // 非vue组件，即通过new Vue方式调用的
+      // 第一个参数为Vue.options 第二个参数为vm.options  第三个参数为vm
+      // vm.$options是将Vue.options和options全部合并后的结果
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor), // vm.constructor  === Vue, 此处代码实际为Vue.options
         options || {}, // options为实例上的options

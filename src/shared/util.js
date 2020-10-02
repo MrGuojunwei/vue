@@ -141,6 +141,7 @@ export function hasOwn (obj: Object | Array<*>, key: string): boolean {
 
 /**
  * Create a cached version of a pure function.
+ * cached函数的作用就是对纯函数的执行结果进行缓存，提升效率
  */
 export function cached<F: Function> (fn: F): F {
   const cache = Object.create(null)
@@ -154,6 +155,7 @@ export function cached<F: Function> (fn: F): F {
  * Camelize a hyphen-delimited string.
  */
 const camelizeRE = /-(\w)/g
+// camelize函数的作用就是将中划线命名方式改为小驼峰方式 比如 keep-alive -> keepAlive
 export const camelize = cached((str: string): string => {
   return str.replace(camelizeRE, (_, c) => c ? c.toUpperCase() : '')
 })
@@ -219,6 +221,7 @@ export function toArray (list: any, start?: number): Array<any> {
 
 /**
  * Mix properties into target object.
+ * 遍历_from对象，将_from的的值浅拷贝到to上，并返回to
  */
 export function extend (to: Object, _from: ?Object): Object {
   for (const key in _from) {
