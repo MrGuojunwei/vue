@@ -21,6 +21,13 @@ import {
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
 
+/**
+ * 初始化声明周期函数，主要是向Vue实例上添加一些属性
+ * $root 根实例  $children $refs
+ * _watcher _inactive _directInactive
+ * _isMounted _isDestroyed _isBeingDestroyed
+ *
+ */
 export function initLifecycle (vm: Component) {
   const options = vm.$options
 
