@@ -25,6 +25,7 @@ export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
+  // 找到第一个非抽象的父实例，将vm添加到其$children数组中
   let parent = options.parent
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
@@ -33,18 +34,18 @@ export function initLifecycle (vm: Component) {
     parent.$children.push(vm)
   }
 
-  vm.$parent = parent
-  vm.$root = parent ? parent.$root : vm
+  vm.$parent = parent // vm.$parent指向第一个非抽象的父实例
+  vm.$root = parent ? parent.$root : vm // $root 指向根实例
 
-  vm.$children = []
-  vm.$refs = {}
+  vm.$children = [] // 用于存在其子实例
+  vm.$refs = {} // 用于存在其ref的集合
 
-  vm._watcher = null
+  vm._watcher = null // 当前实例的watcher
   vm._inactive = null
   vm._directInactive = false
-  vm._isMounted = false
-  vm._isDestroyed = false
-  vm._isBeingDestroyed = false
+  vm._isMounted = false // 生命周期相关 该实例是否已挂载
+  vm._isDestroyed = false // 声明周期相关 该实例是否已被销毁
+  vm._isBeingDestroyed = false // 生命周期相关 该实例是否正在被销毁
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {

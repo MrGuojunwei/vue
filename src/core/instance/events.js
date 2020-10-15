@@ -9,10 +9,12 @@ import {
 } from '../util/index'
 import { updateListeners } from '../vdom/helpers/index'
 
-export function initEvents (vm: Component) {
+export function initEvents(vm: Component) {
+  // 首先在vm实例上新增_events属性并初始化为空对象，用来存储事件，所有通过vm.$on注册的事件监听器都会保存在vm._events中
   vm._events = Object.create(null)
   vm._hasHookEvent = false
   // init parent attached events
+  // listeners为父组件向自己注册的事件，最终这些事件都会通过$on注册到vm._events中。方便调用this.$emit时执行这些回调
   const listeners = vm.$options._parentListeners
   if (listeners) {
     updateComponentListeners(vm, listeners)
@@ -32,7 +34,7 @@ function add (event, fn, once) {
 function remove (event, fn) {
   target.$off(event, fn)
 }
-
+// 更新组件上的监听回调，添加新的事件监听，更新旧的事件监听，删除旧的事件监听等处理
 export function updateComponentListeners (
   vm: Component,
   listeners: Object,

@@ -44,7 +44,9 @@ export function initMixin (Vue: Class<Component>) {
     vm._renderProxy = vm
     // expose real self
     vm._self = vm
+    // 主要执行两个操作 一个是将vm添加到其第一个非抽象父实例的$children中，另一个是向实例添加一些声明周期相关的属性
     initLifecycle(vm)
+    // 主要是添加_events属性，并将父组件向自己注册的事件回调添加到_events对象中。
     initEvents(vm)
     initRender(vm)
     callHook(vm, 'beforeCreate')
