@@ -165,15 +165,17 @@ export function getData (data: Function, vm: Component): any {
 }
 
 const computedWatcherOptions = { lazy: true }
-
+// 初始化computed
 function initComputed (vm: Component, computed: Object) {
   // $flow-disable-line
+  // vm._computedWatchers用来存储计算属性watcher，也就是说每一个computed都是watcher的实例。
   const watchers = vm._computedWatchers = Object.create(null)
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
 
   for (const key in computed) {
     const userDef = computed[key]
+    // 每一个computed都是函数或者是包含get函数的对象，这个函数或者get函数就是watcher中的getter；
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
@@ -184,11 +186,12 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 这个代码验证了 每一个computed都是watcher的实例, 和普通watcher的区别就是options中有一个属性lazy的值为true
       watchers[key] = new Watcher(
         vm,
         getter || noop,
         noop,
-        computedWatcherOptions
+        computedWatcherOptions // {lazy: true}
       )
     }
 
@@ -196,8 +199,10 @@ function initComputed (vm: Component, computed: Object) {
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
     if (!(key in vm)) {
+      // 对每个计算属性，执行defineComputed函数
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
+      // 只会在data和props中去查找是否有同名属性
       if (key in vm.$data) {
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
@@ -212,7 +217,7 @@ export function defineComputed (
   key: string,
   userDef: Object | Function
 ) {
-  const shouldCache = !isServerRendering()
+  const shouldCache = !isServerRendering()// 不是服务端渲染的话 进行缓存，也就是说，只有在非服务端渲染时，才会有缓存
   if (typeof userDef === 'function') {
     sharedPropertyDefinition.get = shouldCache
       ? createComputedGetter(key)
@@ -237,16 +242,23 @@ export function defineComputed (
       )
     }
   }
+  // 定义vm.key属性描述对象，非服务端渲染时，其中get = createComputedGetter(key) = computedGetter
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
-function createComputedGetter (key) {
+function createComputedGetter(key) {
+  // computedGetter 为计算属性的getter
   return function computedGetter () {
-    const watcher = this._computedWatchers && this._computedWatchers[key]
+    const watcher = this._computedWatchers && this._computedWatchers[key] // 取到计算属性watcher
     if (watcher) {
+      // 当watcher.dirty为true时，表示该计算属性的依赖项发生变化，computed的值需要重新计算,调用watcher.evaluate重新计算watcher.value的值
       if (watcher.dirty) {
-        watcher.evaluate()
+        // 执行完watcher.evalute后，会重新调用get，获得新的watcher.value,同时将watcher.dirty设置为false
+        watcher.evaluate();
       }
+      // 这一步操作会将读取计算属性的那个watcher添加到所观察数据的观察着数组中，即dep.subs中，这样当依赖的数据发生变化时，该watcher将会得到通知。
+      // 进行依赖收集，将computedWatcher处理成响应式的。
+      // 换句话说，就是让读取计算属性的那个watcher持续观察计算属性所依赖的状态的变化。
       if (Dep.target) {
         watcher.depend()
       }

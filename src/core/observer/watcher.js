@@ -57,6 +57,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
+      // 计算属性watcher的lazy值为true
       this.lazy = !!options.lazy
       this.sync = !!options.sync
       this.before = options.before
@@ -66,8 +67,9 @@ export default class Watcher {
     this.cb = cb
     this.id = ++uid // uid for batching
     this.active = true
+    // 由于计算属性watcher的lazy为true，所以this.dirty的值也为true，也就是说，计算属性watcher的dirty为true
     this.dirty = this.lazy // for lazy watchers
-    this.deps = []
+    this.deps = [] // 收集该watcher观察了哪些数据
     this.newDeps = []
     this.depIds = new Set()
     this.newDepIds = new Set()
@@ -161,7 +163,9 @@ export default class Watcher {
    * Will be called when a dependency changes.
    */
   update () {
-    /* istanbul ignore else */
+  /* istanbul ignore else */
+    // 如果是计算属性watcher，则this.lazy为true，那么this.dirty的值为true，那么在再次触发计算属性的getter时，会判断this.dirty为true，
+    // 就会执行watcher的evaluate方法，重新调用this.get();
     if (this.lazy) {
       this.dirty = true
     } else if (this.sync) {
@@ -206,6 +210,7 @@ export default class Watcher {
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
    */
+  // 执行该函数将会重新计算该watcher.value，且将watcher.dirty设为false
   evaluate () {
     this.value = this.get()
     this.dirty = false
@@ -214,6 +219,7 @@ export default class Watcher {
   /**
    * Depend on all deps collected by this watcher.
    */
+  // dep.depend会将Dep.target添加到dep中的观察着中
   depend () {
     let i = this.deps.length
     while (i--) {
