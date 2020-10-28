@@ -99,12 +99,16 @@ export default class Watcher {
   /**
    * Evaluate the getter, and re-collect dependencies.
    */
-  get () {
+  get() {
+    // 调用watcher的get方法时，执行了pushTarget代码
+    // pushTarget的作用是将Dep.target的值设置为this
     pushTarget(this)
     let value
     const vm = this.vm
     try {
-      value = this.getter.call(vm, vm)
+      // this.getter()会去访问要监听的数据，触发监听数据的getter，监听的数据就会进行依赖收集，因为已经把当前watcher设置为Dep.target了
+      // 所以就会把当前watcher收集到监听数据的依赖中了
+      value = this.getter.call(vm, vm) // 执行由用户提供的getter函数
     } catch (e) {
       if (this.user) {
         handleError(e, vm, `getter for watcher "${this.expression}"`)
@@ -115,6 +119,7 @@ export default class Watcher {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
       if (this.deep) {
+        // 如果this.deep为true，深度监听这个数据，如果这个值是引用类型，比如数组或者对象，深度监听
         traverse(value)
       }
       popTarget()
@@ -127,11 +132,13 @@ export default class Watcher {
    * Add a dependency to this directive.
    */
   addDep (dep: Dep) {
-    const id = dep.id
+    const id = dep.id // 拿到依赖收集器的id
     if (!this.newDepIds.has(id)) {
-      this.newDepIds.add(id)
-      this.newDeps.push(dep)
+      // 如果watcher实例没有收集这个依赖收集器的id，说明该watcher并未收集该依赖收集器；
+      this.newDepIds.add(id) // 收集过的依赖收集器的id
+      this.newDeps.push(dep) // 该watcher收集依赖收集器
       if (!this.depIds.has(id)) {
+        // 将该watcher收集到依赖收集器中
         dep.addSub(this)
       }
     }

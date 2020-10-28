@@ -34,6 +34,8 @@ export function toggleObserving (value: boolean) {
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
+// 这个类的作用是将一个数据内的所有属性都转换为响应式的，也就是getter/setter属性，
+// 这种方式也存在问题，就是只能将对象中已存在的属性转换成响应式的，如果新增属性的话，新增的属性就不是响应式的，只能通过Vue.$set方法新增
 export class Observer {
   value: any;
   dep: Dep;
@@ -43,14 +45,22 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
-    def(value, '__ob__', this)
+    def(value, '__ob__', this) // 给所有响应式数据都添加__ob__属性 
+    // 每一个响应式数据上都会有一个__ob__属性，通过该属性可以拿到Observer实例，通过实例的dep属性拿到依赖
+    // 如果要转换响应式的值是数组，执行if后面的逻辑
     if (Array.isArray(value)) {
+      // 此处是针对数组的变化侦测
+      // hasProto = '__proto__' in {}
       const augment = hasProto
         ? protoAugment
         : copyAugment
-      augment(value, arrayMethods, arrayKeys)
+      // augment = function (target, src) {target.__proto__ = src}
+      // 如果要监听的数据是数组，就修改该数组的原型链引用为arrayMethods
+      augment(value, arrayMethods, arrayKeys) // 改写数组的部分原型方法
+      // this.observeArray(arrayValue) 就是进行监听数组依赖的收集
       this.observeArray(value)
     } else {
+      // 不是数组，则执行this.walk()
       this.walk(value)
     }
   }
@@ -60,6 +70,7 @@ export class Observer {
    * getter/setters. This method should only be called when
    * value type is Object.
    */
+  // 该函数的作用就是遍历对象中的所有属性，将属性值设置为响应式的。
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
@@ -72,6 +83,7 @@ export class Observer {
    */
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {
+      // 对数组中的每个元素都进行监听，也就是说数组中的每个元素都时响应式的
       observe(items[i])
     }
   }
@@ -83,6 +95,7 @@ export class Observer {
  * Augment an target Object or Array by intercepting
  * the prototype chain using __proto__
  */
+// 修改target的原型链引用为src
 function protoAugment (target, src: Object, keys: any) {
   /* eslint-disable no-proto */
   target.__proto__ = src
@@ -138,6 +151,7 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  // 每一个响应式数据，都会有一个dep，用于收集依赖
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
@@ -146,19 +160,22 @@ export function defineReactive (
   }
 
   // cater for pre-defined getter/setters
-  const getter = property && property.get
-  const setter = property && property.set
+  const getter = property && property.get // 获取属性的默认getter
+  const setter = property && property.set // 获取属性的默认setter
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
 
+  // 递归子属性，将所有属性包括子属性都转换成getter/setter的形式
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
-    get: function reactiveGetter () {
+    get: function reactiveGetter() {
+      // 通过属性默认的getter拿到val值
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // 将当前的watcher收集起来，也就是依赖收集
         dep.depend()
         if (childOb) {
           childOb.dep.depend()

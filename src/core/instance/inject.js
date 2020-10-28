@@ -4,6 +4,10 @@ import { hasOwn } from 'shared/util'
 import { warn, hasSymbol } from '../util/index'
 import { defineReactive, toggleObserving } from '../observer/index'
 
+/**
+ * initProvide provide支持对象类型和函数类型 如果provide是函数类型，则调用该函数，取其返回值
+ * 最终provide会添加到vm._provided属性上
+ */
 export function initProvide (vm: Component) {
   const provide = vm.$options.provide
   if (provide) {

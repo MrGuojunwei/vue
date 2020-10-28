@@ -22,6 +22,7 @@ export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
 
 /**
  * Parse simple path.
+ * 监听'a.b.c.d'的情况处理
  */
 const bailRE = /[^\w.$]/
 export function parsePath (path: string): any {

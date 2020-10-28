@@ -10,20 +10,21 @@ let uid = 0
  * A dep is an observable that can have multiple
  * directives subscribing to it.
  */
+// 该类专门用来处理依赖的收集与依赖的通知
 export default class Dep {
   static target: ?Watcher;
   id: number;
   subs: Array<Watcher>;
 
   constructor () {
-    this.id = uid++
-    this.subs = []
+    this.id = uid++ // 每个依赖收集器都会有一个id
+    this.subs = []; // 依赖要收集到的地方
   }
-
+  // 调用addSub进行依赖收集
   addSub (sub: Watcher) {
     this.subs.push(sub)
   }
-
+  // 将依赖移除
   removeSub (sub: Watcher) {
     remove(this.subs, sub)
   }
@@ -36,7 +37,7 @@ export default class Dep {
 
   notify () {
     // stabilize the subscriber list first
-    const subs = this.subs.slice()
+    const subs = this.subs.slice() // 拿到收集的watcher
     if (process.env.NODE_ENV !== 'production' && !config.async) {
       // subs aren't sorted in scheduler if not running async
       // we need to sort them now to make sure they fire in correct
@@ -44,6 +45,7 @@ export default class Dep {
       subs.sort((a, b) => a.id - b.id)
     }
     for (let i = 0, l = subs.length; i < l; i++) {
+      // 遍历所有收集的watcher，依次调用watcher.update方法， 触发watcher的更新机制
       subs[i].update()
     }
   }

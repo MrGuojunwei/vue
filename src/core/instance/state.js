@@ -44,7 +44,7 @@ export function proxy (target: Object, sourceKey: string, key: string) {
   }
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
-
+// 初始化数据 包括props methods data computed watch
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
@@ -307,10 +307,19 @@ function initWatch (vm: Component, watch: Object) {
     }
   }
 }
-
+/**
+ * 
+ * watch的几种形式
+ * a: function (val, oldVal) {};
+ * b: 'someMethod',
+ * c: {handler: function (val, oldVal) {}, deep: true}
+ * d: {handler: function (val, oldVal) {}, immediate: true}
+ * e: [function handle1(val,oldVal) {}, function handle2(val, oldVal) {}]
+ * 'e.f': function (val, oldVal) {};
+ */
 function createWatcher (
   vm: Component,
-  expOrFn: string | Function,
+  expOrFn: string | Function, // key
   handler: any,
   options?: Object
 ) {
@@ -321,6 +330,7 @@ function createWatcher (
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
+  // options: {deep?: true|false, immediate?: true|false}
   return vm.$watch(expOrFn, handler, options)
 }
 
