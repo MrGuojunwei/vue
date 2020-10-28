@@ -55,7 +55,7 @@ export default class Watcher {
     vm._watchers.push(this)
     // options
     if (options) {
-      this.deep = !!options.deep
+      this.deep = !!options.deep // 当this.deep为true时，表示要深度监听，那么就要触发val所有子值的观察者收集逻辑
       this.user = !!options.user
       // 计算属性watcher的lazy值为true
       this.lazy = !!options.lazy
@@ -69,7 +69,7 @@ export default class Watcher {
     this.active = true
     // 由于计算属性watcher的lazy为true，所以this.dirty的值也为true，也就是说，计算属性watcher的dirty为true
     this.dirty = this.lazy // for lazy watchers
-    this.deps = [] // 收集该watcher观察了哪些数据
+    this.deps = [] // 收集该watcher观察了哪些数据，该数组用来记录该watcher订阅了谁
     this.newDeps = []
     this.depIds = new Set()
     this.newDepIds = new Set()
@@ -243,9 +243,11 @@ export default class Watcher {
       // this is a somewhat expensive operation so we skip it
       // if the vm is being destroyed.
       if (!this.vm._isBeingDestroyed) {
+        // 如果这个vm实例还没有被销毁，将该watcher从实例的watchers中移除该watcher
         remove(this.vm._watchers, this)
       }
       let i = this.deps.length
+      // 循环deps,将自己从所有的依赖中移除，这样当数据发生变化时，就不再通知这个watcher了
       while (i--) {
         this.deps[i].removeSub(this)
       }

@@ -356,14 +356,19 @@ export function stateMixin (Vue: Class<Component>) {
   ): Function {
     const vm: Component = this
     if (isPlainObject(cb)) {
+      // createWatcher会对对象类型的cb进行处理，拿到handler函数，然后调用$watch进行监听
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
     options.user = true
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // immediate是Watcher中所没有的，immediate为true，表示立即执行一次回调
     if (options.immediate) {
+      // 此时回调的参数只有一个值，即watcher.value，oldVal为undefined
       cb.call(vm, watcher.value)
     }
+    // 返回一个取消监听函数，在每个watcher中都会使用一个数组，
+    // 记录下自己订阅了谁，当不再订阅是，执行teardown函数，将自己从那些依赖中移除
     return function unwatchFn () {
       watcher.teardown()
     }
