@@ -357,7 +357,7 @@ export function createPatchFunction (backend) {
       }
     }
   }
-
+  // 删除vnodes
   function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx]
